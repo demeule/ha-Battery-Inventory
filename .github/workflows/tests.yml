@@ -1,0 +1,40 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install Mosquitto (MQTT tests)
+        run: sudo apt-get update && sudo apt-get install -y mosquitto
+      - name: Install Python dependencies
+        run: pip install paho-mqtt==2.1.0 pyyaml pillow
+      - name: Install test dependencies
+        run: npm ci --no-audit --no-fund
+        working-directory: tests
+      - name: Run all tests
+        run: python tests/run_all.py
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build the interface
+        run: npm ci --no-audit --no-fund && npm run build
+        working-directory: frontend
+      - name: Check that the committed build is up to date
+        run: git diff --exit-code -- battery_inventory/web/index.html

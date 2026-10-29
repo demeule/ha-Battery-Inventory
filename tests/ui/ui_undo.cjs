@@ -1,0 +1,40 @@
+const {JSDOM}=require("jsdom");const BASE=process.env.BASE_URL;
+const wait=(ms=150)=>new Promise(r=>setTimeout(r,ms));
+let fails=0;const ok=(c,m)=>{console.log((c?"OK   ":"ECHEC")+" "+m);if(!c)fails++};
+(async()=>{
+ const html=await (await fetch(BASE)).text();
+ const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:BASE,beforeParse(w){w.fetch=(u,o)=>fetch(new URL(u,BASE),o)}});
+ const w=dom.window,d=w.document;await wait(700);
+ const api=async p=>(await fetch(BASE+p)).json();
+ const txt=()=>d.body.textContent;
+ const btn=t=>[...d.querySelectorAll("button,label")].find(b=>b.textContent.trim()===t);
+ const click=async t=>{const b=btn(t);if(!b)throw new Error("bouton introuvable: "+t);b.click();await wait()};
+ const stock=async(f,r=false)=>(await api("api/state")).stock.find(x=>x.format===f&&x.rechargeable===r).quantity;
+ const a0=await stock("AAA");
+ await click("Remplacer les piles"); await click("Confirmer le remplacement"); await wait(300);
+ ok(await stock("AAA")===a0-2,"remplacement fait : AAA "+a0+" -> "+(a0-2));
+ const toast=d.querySelector('[role=status]');
+ ok(toast&&toast.textContent.includes("Remplacement enregistré")&&[...toast.querySelectorAll("button")].some(b=>b.textContent==="Annuler"),"le message contient un bouton Annuler");
+ [...toast.querySelectorAll("button")].find(b=>b.textContent==="Annuler").click(); await wait(400);
+ ok(await stock("AAA")===a0,"clic sur Annuler : stock revenu à "+a0);
+ ok(d.body.textContent.includes("Annulé : Remplacement des piles de Télécommande TV"),"message « Annulé : … »");
+ // suppression puis annulation via l'onglet Historique
+ const n0=(await api("api/state")).equipment.length;
+ d.querySelector('button[aria-label="Supprimer Train en bois"]').click();await wait();
+ await click("Supprimer sans remettre en stock");await wait(300);
+ ok((await api("api/state")).equipment.length===n0-1,"équipement supprimé");
+ d.querySelector("[role=status] button")&&0;
+ [...d.querySelectorAll("nav button")].find(b=>b.textContent.trim()==="Historique").click();await wait(400);
+ ok(d.body.textContent.includes("Annuler la dernière action")&&d.body.textContent.includes("Suppression de Train en bois"),"carte « Annuler la dernière action » : Suppression de Train en bois");
+ const card=[...d.querySelectorAll(".row-item")].find(r=>r.textContent.includes("Annuler la dernière action"));
+ [...card.querySelectorAll("button")].find(b=>b.textContent==="Annuler").click();await wait(500);
+ ok((await api("api/state")).equipment.length===n0,"suppression annulée depuis l'Historique : Train en bois est revenu");
+ // action plus ancienne refusée : on utilise l'API
+ const post=async(action,args)=>fetch(BASE+"api/action",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,args})});
+ const s=await api("api/state");
+ const r1=await (await post("declareDead",{id:s.equipment[0].id})).json(); const first=r1.undo.id;
+ await post("declareDead",{id:s.equipment[1].id});
+ const r=await post("undo",{id:first}); const j=await r.json();
+ ok(r.status===400&&j.error.includes("plus la dernière"),"annuler une action devenue ancienne : refusé proprement");
+ console.log(fails?`\n${fails} ECHEC(S)`:"\nTOUT PASSE");process.exit(fails?1:0);
+})().catch(e=>{console.error("ERREUR",e);process.exit(1)});

@@ -1,0 +1,32 @@
+name: Bug report
+description: Something does not work as expected
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Battery Inventory version
+      description: Shown in the app under Settings, "À propos et soutien".
+    validations:
+      required: true
+  - type: input
+    id: ha
+    attributes:
+      label: Home Assistant version and installation type
+      placeholder: "2026.10 - Home Assistant OS"
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+  - type: textarea
+    id: logs
+    attributes:
+      label: Add-on log
+      description: Settings > Add-ons > Battery Inventory > Log. Remove anything private before pasting.
+      render: text

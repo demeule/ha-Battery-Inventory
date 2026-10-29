@@ -1,0 +1,13 @@
+configuration:
+  mqtt_host:
+    name: Adresse du broker MQTT
+    description: Laisser vide pour utiliser automatiquement le module Mosquitto.
+  mqtt_port:
+    name: Port du broker MQTT
+    description: Utilisé seulement si une adresse est indiquée ci-dessus (1883 par défaut).
+  mqtt_user:
+    name: Utilisateur MQTT
+    description: Utilisé seulement si une adresse est indiquée ci-dessus.
+  mqtt_password:
+    name: Mot de passe MQTT
+    description: Utilisé seulement si une adresse est indiquée ci-dessus.

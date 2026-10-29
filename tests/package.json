@@ -1,0 +1,8 @@
+{
+  "name": "battery-inventory-tests",
+  "private": true,
+  "description": "Tests d'interface (jsdom) de Battery Inventory",
+  "devDependencies": {
+    "jsdom": "^26.0.0"
+  }
+}

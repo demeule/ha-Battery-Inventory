@@ -1,0 +1,13 @@
+configuration:
+  mqtt_host:
+    name: MQTT broker host
+    description: Leave empty to use the Mosquitto broker add-on automatically.
+  mqtt_port:
+    name: MQTT broker port
+    description: Only used when a host is set above (default 1883).
+  mqtt_user:
+    name: MQTT user
+    description: Only used when a host is set above.
+  mqtt_password:
+    name: MQTT password
+    description: Only used when a host is set above.

@@ -1,0 +1,31 @@
+# Dashboard card for Battery Inventory.
+# In Home Assistant: edit a dashboard > Add card > Manual > paste this.
+type: vertical-stack
+cards:
+  - type: entities
+    title: Batteries
+    entities:
+      - entity: sensor.battery_total_stock
+        name: Batteries in stock
+      - entity: sensor.battery_total_installed
+        name: Batteries installed
+      - entity: binary_sensor.battery_low_stock_alert
+        name: Low stock
+      - entity: binary_sensor.battery_dead_alert
+        name: Dead batteries
+      - entity: binary_sensor.battery_reminder_alert
+        name: Replacement reminders
+      - entity: sensor.battery_last_result
+        name: Last command result
+  - type: markdown
+    content: >-
+      {% set low = is_state('binary_sensor.battery_low_stock_alert', 'on') %}
+      {% set dead = is_state('binary_sensor.battery_dead_alert', 'on') %}
+      {% set due = is_state('binary_sensor.battery_reminder_alert', 'on') %}
+      {% if low %}**To buy:** {{ state_attr('binary_sensor.battery_low_stock_alert', 'text') }}
+
+      {% endif %}{% if dead %}**Dead batteries:** {{ state_attr('binary_sensor.battery_dead_alert', 'text') }}
+
+      {% endif %}{% if due %}**Replace soon:** {{ state_attr('binary_sensor.battery_reminder_alert', 'text') }}
+
+      {% endif %}{% if not low and not dead and not due %}Everything is fine.{% endif %}

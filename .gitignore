@@ -1,0 +1,18 @@
+# Node
+node_modules/
+frontend/dist/
+
+# Python
+__pycache__/
+*.pyc
+
+# Local data when running the server outside Home Assistant
+battery_inventory/data/
+data/
+*.log
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

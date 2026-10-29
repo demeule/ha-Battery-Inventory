@@ -1,0 +1,28 @@
+name: "Battery Inventory"
+version: "1.0.0"
+slug: "battery_inventory"
+description: "Track every battery at home: equipment, stock, dead batteries, reminders and Home Assistant entities."
+url: "https://github.com/demeule/ha-Battery-Inventory"
+arch:
+  - amd64
+  - aarch64
+startup: application
+boot: auto
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:battery-heart-variant
+panel_title: "Batteries"
+panel_admin: false
+hassio_api: true
+services:
+  - mqtt:want
+options:
+  mqtt_host: ""
+  mqtt_port: 1883
+  mqtt_user: ""
+  mqtt_password: ""
+schema:
+  mqtt_host: str?
+  mqtt_port: port?
+  mqtt_user: str?
+  mqtt_password: password?

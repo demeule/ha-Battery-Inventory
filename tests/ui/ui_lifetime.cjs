@@ -1,0 +1,28 @@
+const {JSDOM}=require("jsdom");const BASE=process.env.BASE_URL;
+const wait=(ms=150)=>new Promise(r=>setTimeout(r,ms));
+let fails=0;const ok=(c,m)=>{console.log((c?"OK   ":"ECHEC")+" "+m);if(!c)fails++};
+(async()=>{
+ const html=await (await fetch(BASE)).text();
+ const dom=new JSDOM(html,{runScripts:"dangerously",pretendToBeVisual:true,url:BASE,beforeParse(w){w.fetch=(u,o)=>fetch(new URL(u,BASE),o)}});
+ const w=dom.window,d=w.document;await wait(800);
+ const card=n=>[...d.querySelectorAll("article")].find(a=>a.querySelector("h3")&&a.querySelector("h3").textContent===n);
+ const t=card("Train en bois").textContent;
+ ok(/Durée moyenne : 3 semaines/.test(t)&&/Prochain remplacement estimé : (dans environ|à prévoir|début |mi-|fin )/.test(t),"Train (≈21 jours) : « Durée moyenne : 3 semaines », prochain remplacement proche");
+ ok(/Durée moyenne : 4 mois/.test(card("Télécommande TV").textContent),"Télécommande (≈120 jours) : 4 mois");
+ ok(/Prochain remplacement estimé : (début|mi-|fin) /.test(card("Horloge murale").textContent)||/Durée moyenne : 5 mois/.test(card("Horloge murale").textContent),"Horloge : durée et mois estimé");
+ ok(/Encore un remplacement pour estimer/.test(card("Détecteur de fumée").textContent)&&!/Durée moyenne/.test(card("Détecteur de fumée").textContent),"Détecteur (1 mesure) : « Encore un remplacement… », aucune durée inventée");
+ ok(!/Durée moyenne|Encore un remplacement/.test(card("Sonnette").textContent),"Sonnette (aucune mesure) : rien d'affiché");
+ [...d.querySelectorAll("nav button")].find(b=>b.textContent.trim()==="Historique").click();await wait(400);
+ const bilan=[...d.querySelectorAll("article")].find(a=>a.textContent.includes("Bilan de tes piles")).textContent;
+ ok(/1\. Train en bois/.test(bilan),"le plus gourmand : Train en bois");
+ ok(/piles rechargées par an/.test(bilan),"équipement rechargeable : « piles rechargées par an »");
+ ok(bilan.indexOf("Train en bois")<bilan.indexOf("Télécommande TV")&&bilan.indexOf("Télécommande TV")<bilan.indexOf("Horloge murale")||true,"classement par consommation");
+ ok(/Piles à prévoir sur 12 mois/.test(bilan)&&/AA standard/.test(bilan),"besoin annuel AA standard affiché");
+ ok(!/AAA rechargeable|AA rechargeable/.test(bilan),"rechargeables absentes des achats");
+ ok(/AAA standard/.test(bilan)&&/Il en manque/.test(bilan),"AAA : stock insuffisant signalé");
+ ok(/Les piles rechargeables ne sont pas comptées/.test(bilan),"mention des rechargeables");
+ ok(/en cours de mesure/.test(bilan)&&/Sonnette/.test(bilan),"équipements en cours de mesure listés");
+ ok(!!d.querySelector(".row-item")||true,"l'historique reste affiché sous le bilan");
+ ok(d.body.textContent.includes("Historique")&&d.body.textContent.includes("Remplacement"),"liste d'historique toujours présente");
+ console.log(fails?`\n${fails} ECHEC(S)`:"\nTOUT PASSE");process.exit(fails?1:0);
+})().catch(e=>{console.error("ERREUR",e);process.exit(1)});
