@@ -1,4 +1,4 @@
 # Sponsor button shown on the repository page.
 # Enable each line once the matching account exists (an unknown account makes GitHub show an error on this file).
 ko_fi: demeule
-# github: demeule        # GitHub Sponsors: uncomment after your Sponsors profile is approved
+github: demeule        # GitHub Sponsors: uncomment after your Sponsors profile is approved
